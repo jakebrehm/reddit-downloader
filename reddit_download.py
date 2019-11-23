@@ -5,6 +5,7 @@ Uses PRAWL to download all media that was submitted by a specified
 Reddit user.
 '''
 
+import argparse
 import concurrent.futures
 import configparser
 import re
@@ -29,9 +30,9 @@ def verify_response(url):
     # Attempt to connect to the url and capture the response
     try:
         response = requests.get(url, stream=True)
-    # Print the error and return False upon exception
-    except Exception as e:
-        print(e)
+    # Let the user know there was an error and return False upon exception
+    except:
+        print(f'Could not verify response from {url}.')
         return False
     # If no exception occured...
     else:
@@ -40,6 +41,7 @@ def verify_response(url):
             return response
         # Otherwise, return False
         else:
+            print(f'Invalid response from {url}.')
             return False
 
 
@@ -58,6 +60,8 @@ def download_file(response, filename):
     with open(f'img\\{filename}', 'wb') as output:
         for chunk in response:
             output.write(chunk)
+    # Print a confirmation message.
+    print(f'Successfully downloaded {filename}.')
 
 
 def download_post(submission):
@@ -92,18 +96,28 @@ def download_post(submission):
 
 if __name__ == '__main__':
 
+    # Set up the argument parser
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        'user',
+        type=str,
+        help='Name of the user you want to download all media from',
+    )
+    # Parse the arguments for the specified user
+    args = parser.parse_args()
+    USER = args.user
+
     # Read the configuration file
-    parser = configparser.ConfigParser()
-    parser.read(r'config.ini')
+    config = configparser.ConfigParser()
+    config.read(r'config.ini')
 
     # Initialize the Reddit object
     reddit = praw.Reddit(
-        client_id=parser['credentials']['client id'],
-        client_secret=parser['credentials']['client secret'],
-        user_agent=parser['credentials']['user agent'],
+        client_id=config['credentials']['client id'],
+        client_secret=config['credentials']['client secret'],
+        user_agent=config['credentials']['user agent'],
     )
     # Gather all of the posts by the specified user
-    USER = parser['testing']['user']
     profile = reddit.redditor(USER)
     posts = profile.submissions.new(limit=None)
 
