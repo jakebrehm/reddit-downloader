@@ -1,7 +1,10 @@
+import concurrent.futures
 import configparser
-import praw
 import re
+
+import praw
 import requests
+
 
 def verify_response(url):
     try:
@@ -15,10 +18,29 @@ def verify_response(url):
         else:
             return False
 
-def download(response, filename):
+
+def download_file(response, filename):
     with open(f'img\\{filename}', 'wb') as output:
         for chunk in response:
             output.write(chunk)
+
+
+def download_post(submission):
+    link = str(submission.url)
+    print(link)
+    if link.endswith('.jpg') or link.endswith('.png'):
+        response = verify_response(link)
+        if response:
+            filename = link.split('/')[-1]
+            download_file(response, filename)
+    elif 'imgur.com/a/' in link:
+        response = verify_response(f'{link}/zip')
+        if response:
+            disposition = response.headers['Content-Disposition']
+            matches = re.search(r'filename="(.*)"', disposition)
+            filename = matches.group(1)
+            download_file(response, filename)
+
 
 parser = configparser.ConfigParser()
 parser.read(r'config.ini')
@@ -34,17 +56,5 @@ reddit = praw.Reddit(
 profile = reddit.redditor(USER)
 posts = profile.submissions.new(limit=None)
 
-for post in posts:
-    link = str(post.url)
-    if link.endswith('.jpg') or link.endswith('.png'):
-        response = verify_response(link)
-        if response:
-            filename = link.split('/')[-1]
-            download(response, filename)
-    elif 'imgur.com/a/' in link:
-        response = verify_response(f'{link}/zip')
-        if response:
-            disposition = response.headers['Content-Disposition']
-            matches = re.search(r'filename="(.*)"', disposition)
-            filename = matches.group(1)
-            download(response, filename)
+with concurrent.futures.ThreadPoolExecutor() as executor:
+    executor.map(download_post, list(posts))
