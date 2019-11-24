@@ -2,6 +2,8 @@
 
 **Reddit Downloader** is a command-line script that downloads all media content posted by a specified Reddit user.
 
+---
+
 # How to get it
 
 To get a copy of this script, use the following command:
