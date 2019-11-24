@@ -27,6 +27,7 @@ For now, the images will be placed into a folder named *img* in the same directo
 
 # Ideas for future changes
 - Give the user the ability to specify a custom output path instead of having the files downloaded to a static folder
+- Fix issue where some links are not seen as media because the url does not include a file extension
 
 ---
 
