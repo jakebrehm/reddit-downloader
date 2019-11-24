@@ -19,7 +19,7 @@ Open command prompt in the directory that you cloned this repository to, and use
 ```
 python reddit_download.py <username>
 ```
-where *<username>* is the name of the Reddit profile that you wish to download all media from.
+where *\<username>* is the name of the Reddit profile that you wish to download all media from.
 
 For now, the images will be placed into a folder named *img* in the same directory as the script. This folder will be created automatically if necessary.
 
