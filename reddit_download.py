@@ -8,6 +8,7 @@ Reddit user.
 import argparse
 import concurrent.futures
 import configparser
+import os
 import re
 
 import praw
@@ -57,7 +58,8 @@ def download_file(response, filename):
     """
 
     # Download the file in chunks
-    with open(f'img\\{filename}', 'wb') as output:
+    destination = os.path.join('img', filename)
+    with open(destination, 'wb') as output:
         for chunk in response:
             output.write(chunk)
     # Print a confirmation message.
@@ -120,6 +122,10 @@ if __name__ == '__main__':
     # Gather all of the posts by the specified user
     profile = reddit.redditor(USER)
     posts = profile.submissions.new(limit=None)
+
+    # Make an image folder if it doesn't already exist
+    if not os.path.exists(r'img'):
+        os.makedirs(r'img')
 
     # Execute a thread pool to download the files as quickly as possible
     with concurrent.futures.ThreadPoolExecutor() as executor:
