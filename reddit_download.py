@@ -15,6 +15,14 @@ import praw
 import requests
 
 
+def make_directory(output_location):
+    """Checks if the specified directory exists, and creates it if not."""
+
+    if not os.path.exists(output_location):
+        os.makedirs(output_location)
+    print(f'Files will be downloaded to: {output_location}')
+
+
 def verify_response(url):
     """Uses the requests module to get a response from the media url,
     then verifies if it is working or not.
@@ -105,9 +113,17 @@ if __name__ == '__main__':
         type=str,
         help='Name of the user you want to download all media from',
     )
+    parser.add_argument(
+        '-o',
+        '--output',
+        type=str,
+        default='img',
+        help='Location of the folder that will hold the downloaded media.',
+    )
     # Parse the arguments for the specified user
     args = parser.parse_args()
     USER = args.user
+    DESTINATION = args.output
 
     # Read the configuration file
     config = configparser.ConfigParser()
@@ -124,8 +140,7 @@ if __name__ == '__main__':
     posts = profile.submissions.new(limit=None)
 
     # Make an image folder if it doesn't already exist
-    if not os.path.exists(r'img'):
-        os.makedirs(r'img')
+    make_directory(DESTINATION)
 
     # Execute a thread pool to download the files as quickly as possible
     with concurrent.futures.ThreadPoolExecutor() as executor:
