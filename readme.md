@@ -17,16 +17,23 @@ On top of the standard library, **Reddit Downloader** requires the [requests](ht
 
 # How to use it
 
-Open command prompt in the directory that you cloned this repository to, and use the command:
-```
-python reddit_download.py <username>
-```
-where *\<username>* is the name of the Reddit profile that you wish to download all media from.
+In order to being using **Reddit Downloader**, you must add your own Reddit credentials to the script.
 
-For now, the images will be placed into a folder named *img* in the same directory as the script. This folder will be created automatically if necessary.
+If you do not already have these credentials, log in to your Reddit account and navigate to the [authorized applications page](https://www.reddit.com/prefs/apps). Once there, press the `create another app...` button at the bottom of the page. Type in a name, description, and urls for your project, select the `script` radio button, and press `create app`. If successful, you now have all of the information required to begin using **Reddit Downloader**.
+
+Your `client ID` can be found directly under the title of your application, `client secret` is labeled `secret`, and `user agent` can be anything you want it to be.
+
+With this information, navigate to the bottom of *reddit_download.py* and change the arguments of the RedditDownloader instantiation accordingly.
+
+Finally, you can open a terminal/command prompt in the directory that you cloned this repository to, and use the command:
+```
+python reddit_download.py [-o "path\to\desired\output directory"] <username>
+```
+where the optional *-o* argument is directory to save the downladed files to and *\<username>* is the name of the Reddit profile that you wish to download all media from.
+
+By default, if you do not enter the text shown in brackets, the images will be placed into a folder named *media* in the same directory as the script. This folder will be created automatically if necessary.
 
 # Ideas for future changes
-- Give the user the ability to specify a custom output path instead of having the files downloaded to a static folder
 - Fix issue where some links are not seen as media because the url does not include a file extension
 
 ---
