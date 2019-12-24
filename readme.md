@@ -29,7 +29,7 @@ Finally, you can open a terminal/command prompt in the directory that you cloned
 ```
 python reddit_download.py [-o "path\to\desired\output directory"] <username>
 ```
-where the optional *-o* argument is directory to save the downladed files to and *\<username>* is the name of the Reddit profile that you wish to download all media from.
+where the optional *-o* argument is the directory to save the downladed files to and *\<username>* is the name of the Reddit profile that you wish to download all media from.
 
 By default, if you do not enter the text shown in brackets, the images will be placed into a folder named *media* in the same directory as the script. This folder will be created automatically if necessary.
 
