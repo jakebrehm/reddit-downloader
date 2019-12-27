@@ -1,8 +1,12 @@
+<p align="center">
+  <img src="https://github.com/jakebrehm/reddit-downloader/blob/master/img/logo.png" width="600" height="100" alt="lemons logo"/>
+</p>
+
+---
+
 # Reddit Downloader
 
 **Reddit Downloader** is a command-line script that downloads all media content posted by a specified Reddit user.
-
----
 
 # How to get it
 
