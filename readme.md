@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/jakebrehm/reddit-downloader/blob/master/img/logo.png" width="624" height="100" alt="lemons logo"/>
+  <img src="https://github.com/jakebrehm/reddit-downloader/blob/master/img/logo.png" width="624" height="100" alt="reddit downloader logo"/>
 </p>
 
 ---
