@@ -15,6 +15,45 @@ import praw
 import requests
 
 
+def print_progress_bar(
+            current, total,
+            prefix='', suffix='', decimals=1, length=100, fill='█'
+    ):
+    """Can be called in a loop in order to print a progress bar to the
+    console.
+
+    Args:
+        current (int):
+            Current iteration count.
+        total (int):
+            Total number of iterations.
+    
+    Kwargs:
+        prefix (str):
+            String to add before the progress bar.
+        suffix (str):
+            String to add after the progress bar.
+        decimals (int):
+            A positive number denoting how much decimals to show in the
+            percentage complete.
+        length (int):
+            Number of characters in the progress bar.
+        fill (str, █):
+            Fill character of the progress bar.
+    """
+
+    # Calculate percentage and format according to arguments
+    percent = f'{(current / total * 100):0.{decimals}f}'
+    # Calculate how much of the bar to fill and make the graphics
+    filled_length = int(length * current // total)
+    bar = (fill * filled_length) + ('-' * (length - filled_length))
+    # Print the progress bar
+    print(f'\r{prefix} |{bar}| {percent}% {suffix}', end='\r')
+    # Print New Line on Complete
+    if current == total: 
+        print()
+
+
 class RedditDownloader(praw.Reddit):
     """Downloads all detectable media that was submitted by a Reddit
     user.
@@ -53,6 +92,12 @@ class RedditDownloader(praw.Reddit):
         # Set up the argument parser
         parser = argparse.ArgumentParser()
         parser.add_argument(
+            '-q',
+            '--quick',
+            action='store_true',
+            help='Whether or not to show a progress bar (impedes speed).',
+        )
+        parser.add_argument(
             '-o',
             '--output',
             type=str,
@@ -66,6 +111,7 @@ class RedditDownloader(praw.Reddit):
         )
         # Parse the arguments for the specified user
         args = parser.parse_args()
+        self.QUICK = args.quick
         self.DESTINATION = args.output
         self.USER = args.user
 
@@ -73,9 +119,24 @@ class RedditDownloader(praw.Reddit):
         if create_directory:
             self._make_directory()
 
-        # Get the specified user's posts
+        # # Get the specified user's posts
         self.profile = self.redditor(self.USER)
-        self.posts = self.profile.submissions.new(limit=None)
+        if self.QUICK:
+            self.posts = self.profile.submissions.new(limit=None)
+        else:
+            posts = self.profile.submissions.new(limit=None)
+            # Convert to a list in order to get length
+            self.posts = list(posts)
+            self._total = len(self.posts)
+            # Initialize the progress bar
+            self._completed = 0
+            self.print_progress_bar()
+
+
+    def print_progress_bar(self):
+        """Prints a progress bar to the console."""
+
+        print_progress_bar(self._completed, self._total, length=50)
 
 
     def _make_directory(self):
@@ -105,7 +166,7 @@ class RedditDownloader(praw.Reddit):
             response = requests.get(url, stream=True)
         # Let the user know there was an error and return False upon exception
         except:
-            print(f'Could not verify response from {url}.')
+            # print(f'Could not verify response from {url}.')
             return False
         # If no exception occured...
         else:
@@ -114,7 +175,7 @@ class RedditDownloader(praw.Reddit):
                 return response
             # Otherwise, return False
             else:
-                print(f'Invalid response from {url}.')
+                # print(f'Invalid response from {url}.')
                 return False
 
 
@@ -130,13 +191,13 @@ class RedditDownloader(praw.Reddit):
         """
 
         # Download the file in chunks
-        # destination = os.path.join('img', filename)
         destination = os.path.join(self.DESTINATION, filename)
         with open(destination, 'wb') as output:
             for chunk in response:
                 output.write(chunk)
         # Print a confirmation message
-        print(f'Successfully downloaded {filename}.')
+        if self.QUICK:
+            print(f'Successfully downloaded {filename}.')
 
 
     def _download_post(self, submission):
@@ -168,9 +229,14 @@ class RedditDownloader(praw.Reddit):
                 filename = matches.group(1)
                 self._download_file(response, filename)
 
+        # Update the progress bar if necessary
+        if not self.QUICK:
+            self._completed += 1
+            self.print_progress_bar()
 
-    def download_all(self):
-        """Execute a thread pool to download the files as quickly ass
+
+    def start_download(self):
+        """Execute a thread pool to download the files as quickly as
         possible."""
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -191,4 +257,4 @@ if __name__ == '__main__':
         create_directory=True,
     )
     # Download all of the posts
-    downloader.download_all()
+    downloader.start_download()
