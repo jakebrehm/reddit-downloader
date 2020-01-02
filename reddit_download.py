@@ -91,19 +91,24 @@ class RedditDownloader(praw.Reddit):
 
         # Set up the argument parser
         parser = argparse.ArgumentParser()
+        # Allow the user to specify whether to show the progress bar or not
         parser.add_argument(
             '-q',
             '--quick',
             action='store_true',
             help='Whether or not to show a progress bar (impedes speed).',
         )
+        # Allow the user to specify the output location
+        current_directory = os.path.dirname(os.path.realpath(__file__))
+        default_directory = os.path.join(current_directory, 'media')
         parser.add_argument(
             '-o',
             '--output',
             type=str,
-            default='media',
+            default=default_directory,
             help='Location of the folder that will hold the downloaded media.',
         )
+        # Allow the user to specify the user
         parser.add_argument(
             'user',
             type=str,
