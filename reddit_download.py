@@ -48,7 +48,8 @@ def print_progress_bar(
     filled_length = int(length * current // total)
     bar = (fill * filled_length) + ('-' * (length - filled_length))
     # Print the progress bar
-    print(f'\r{prefix} |{bar}| {percent}% {suffix}', end='\r')
+    # print(f'\r{prefix} |{bar}| {percent}% {suffix}', end='\r')
+    print(f'\r{prefix} |{bar}| {percent}% ({current}/{total})', end='\r')
     # Print New Line on Complete
     if current == total: 
         print()
@@ -108,34 +109,60 @@ class RedditDownloader(praw.Reddit):
             default=default_directory,
             help='Location of the folder that will hold the downloaded media.',
         )
+        # # Allow the user to specify the user
+        # parser.add_argument(
+        #     'user',
+        #     type=str,
+        #     required=True,
+        #     help='Name of the user you want to download all media from',
+        # )
         # Allow the user to specify the user
         parser.add_argument(
             'user',
             type=str,
+            nargs='+',
             help='Name of the user you want to download all media from',
         )
         # Parse the arguments for the specified user
         args = parser.parse_args()
         self.QUICK = args.quick
         self.DESTINATION = args.output
-        self.USER = args.user
+        # self.USER = args.user
+        self.USERS = args.user
 
         # Create a media folder to store the downloads
         if create_directory:
             self._make_directory()
 
+        # # # Get the specified user's posts
+        # self.profile = self.redditor(self.USER)
+        # if self.QUICK:
+        #     self.posts = self.profile.submissions.new(limit=None)
+        # else:
+        #     posts = self.profile.submissions.new(limit=None)
+        #     # Convert to a list in order to get length
+        #     self.posts = list(posts)
+        #     self._total = len(self.posts)
+        #     # Initialize the progress bar
+        #     self._completed = 0
+        #     self.print_progress_bar()
+
         # # Get the specified user's posts
-        self.profile = self.redditor(self.USER)
+        self.profiles = [self.redditor(user) for user in self.USERS]
         if self.QUICK:
-            self.posts = self.profile.submissions.new(limit=None)
+            self.posts = [p.submissions.new(limit=None) for p in self.profiles]
         else:
-            posts = self.profile.submissions.new(limit=None)
+            posts = [p.submissions.new(limit=None) for p in self.profiles]
             # Convert to a list in order to get length
-            self.posts = list(posts)
-            self._total = len(self.posts)
+            self.posts = [list(post) for post in posts]
+            # self._total = len(self.posts)
+            self._total = 0
+            for post in self.posts:
+                self._total += len(post)
             # Initialize the progress bar
             self._completed = 0
             self.print_progress_bar()
+
 
 
     def print_progress_bar(self):
@@ -244,8 +271,12 @@ class RedditDownloader(praw.Reddit):
         """Execute a thread pool to download the files as quickly as
         possible."""
 
+        # with concurrent.futures.ThreadPoolExecutor() as executor:
+        #     executor.map(self._download_post, list(self.posts))
+
+        posts = [item for sublist in self.posts for item in sublist]
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            executor.map(self._download_post, list(self.posts))
+            executor.map(self._download_post, posts)
 
 
 if __name__ == '__main__':
