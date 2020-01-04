@@ -4,7 +4,7 @@
 
 ---
 
-**Reddit Downloader** is a command-line script that downloads all media content posted by a specified Reddit user.
+**Reddit Downloader** is a command-line script that downloads all media content posted by specified Reddit users.
 
 # How to get it
 
@@ -29,11 +29,13 @@ With this information, navigate to the bottom of *reddit_download.py* and change
 
 Finally, you can open a terminal/command prompt in the directory that you cloned this repository to, and use the command:
 ```
-python reddit_download.py [-o "path\to\desired\output directory"] <username>
+python reddit_download.py [-o "path\to\desired\output directory"] user [user ...]
 ```
-where the optional *-o* argument is the directory to save the downladed files to and *\<username>* is the name of the Reddit profile that you wish to download all media from.
+where the optional *-o* argument is the directory to save the downladed files to and *user* is the name(s) of the Reddit profile that you wish to download all media from.
 
 By default, if you do not enter the text shown in brackets, the images will be placed into a folder named *media* in the same directory as the script. This folder will be created automatically if necessary.
+
+To download posts from more than one user simultaneously, simply enter more than one username separated by spaces.
 
 # Ideas for future changes
 - Fix issue where some links are not seen as media because the url does not include a file extension
