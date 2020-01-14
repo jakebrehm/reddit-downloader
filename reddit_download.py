@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 '''
-Uses PRAWL to download all media that was submitted by a specified
+Uses PRAW to download all media that was submitted by a specified
 Reddit user.
 '''
 
@@ -91,6 +91,13 @@ class RedditDownloader(praw.Reddit):
             action='store_true',
             help='Whether or not to show a progress bar (impedes speed).',
         )
+        # Allow the user to specify whether to make a folder for each user
+        parser.add_argument(
+            '-s',
+            '--separate',
+            action='store_true',
+            help='Whether or not to make a separate folder for each user.',
+        )
         # Allow the user to specify the output location
         current_directory = os.path.dirname(os.path.realpath(__file__))
         default_directory = os.path.join(current_directory, 'media')
@@ -111,12 +118,17 @@ class RedditDownloader(praw.Reddit):
         # Parse the arguments for the specified user
         args = parser.parse_args()
         self.QUICK = args.quick
+        self.SEPARATE = args.separate
         self.DESTINATION = args.output
         self.USERS = args.user
 
         # Create a media folder to store the downloads
         if create_directory:
-            self._make_directory()
+            self._make_output_directory()
+        # Create a folder for each user if necessary
+        if self.SEPARATE:
+            for user in self.USERS:
+                self._make_user_folder(user)
 
         # # Get the specified user's posts
         self.profiles = [self.redditor(user) for user in self.USERS]
@@ -141,13 +153,21 @@ class RedditDownloader(praw.Reddit):
         print_progress_bar(self._completed, self._total, length=50)
 
 
-    def _make_directory(self):
+    def _make_output_directory(self):
         """Checks if the specified directory exists, and creates it if
         not."""
 
         if not os.path.exists(self.DESTINATION):
             os.makedirs(self.DESTINATION)
         print(f'Files will be downloaded to: {self.DESTINATION}')
+
+
+    def _make_user_folder(self, user):
+        """Makes a folder for a specific user inside the output
+        directory."""
+
+        location = os.path.join(self.DESTINATION, user)
+        os.makedirs(location)
 
 
     def _verify_response(self, url):
@@ -182,6 +202,7 @@ class RedditDownloader(praw.Reddit):
 
 
     def _download_file(self, response, filename):
+    # def _download_file(self, response, filename, user):
         """Downloads the media file in chunks to an images folder, which
         will be placed in the same directory as this script.
         
@@ -194,6 +215,8 @@ class RedditDownloader(praw.Reddit):
 
         # Download the file in chunks
         destination = os.path.join(self.DESTINATION, filename)
+        # if self.SEPARATE:
+        #     destination = os.path.join(destination, user)
         with open(destination, 'wb') as output:
             for chunk in response:
                 output.write(chunk)
