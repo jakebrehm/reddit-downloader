@@ -167,7 +167,8 @@ class RedditDownloader(praw.Reddit):
         directory."""
 
         location = os.path.join(self.DESTINATION, user)
-        os.makedirs(location)
+        if not os.path.exists(location):
+            os.makedirs(location)
 
 
     def _verify_response(self, url):
@@ -201,22 +202,25 @@ class RedditDownloader(praw.Reddit):
                 return False
 
 
-    def _download_file(self, response, filename):
-    # def _download_file(self, response, filename, user):
+    def _download_file(self, response, filename, user):
         """Downloads the media file in chunks to an images folder, which
         will be placed in the same directory as this script.
         
         Args:
             response (obj):
-                The object that was return by the requests.get() method.
+                The object that was returned by the requests.get method.
             filename (str):
                 The filename to give the downloaded file.
+            user (str):
+                The user that posted the submission.
         """
 
+        # Determine where to download the file to
+        if self.SEPARATE:
+            destination = os.path.join(self.DESTINATION, user, filename)
+        else:
+            destination = os.path.join(self.DESTINATION, filename)
         # Download the file in chunks
-        destination = os.path.join(self.DESTINATION, filename)
-        # if self.SEPARATE:
-        #     destination = os.path.join(destination, user)
         with open(destination, 'wb') as output:
             for chunk in response:
                 output.write(chunk)
@@ -234,7 +238,7 @@ class RedditDownloader(praw.Reddit):
                 Reddit submission object.
         """
 
-        link = str(submission.url)
+        link, author = str(submission.url), str(submission.author)
         # If submission is a direct link to a jpg or png file...
         if link.endswith('.jpg') or link.endswith('.png'):
             # Verify the response
@@ -242,7 +246,7 @@ class RedditDownloader(praw.Reddit):
             # Parse the filename from the link itself, then download
             if response:
                 filename = link.split('/')[-1]
-                self._download_file(response, filename)
+                self._download_file(response, filename, author)
         # Otherwise, if the submission is a link to an Imgur album...
         elif 'imgur.com/a/' in link:
             # Get a link to the zip file and verify the response
@@ -252,7 +256,7 @@ class RedditDownloader(praw.Reddit):
                 disposition = response.headers['Content-Disposition']
                 matches = re.search(r'filename="(.*)"', disposition)
                 filename = matches.group(1)
-                self._download_file(response, filename)
+                self._download_file(response, filename, author)
 
         # Update the progress bar if necessary
         if not self.QUICK:
