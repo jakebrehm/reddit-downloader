@@ -29,9 +29,9 @@ With this information, navigate to the bottom of *reddit_download.py* and change
 
 Finally, you can open a terminal/command prompt in the directory that you cloned this repository to, and use the command:
 ```
-python reddit_download.py [-o "path\to\desired\output directory"] user [user ...]
+python reddit_download.py [-o "path\to\desired\output directory"] [-s] user [user ...]
 ```
-where the optional *-o* argument is the directory to save the downladed files to and *user* is the name(s) of the Reddit profile that you wish to download all media from.
+where the optional *-o* argument is the directory to save the downladed files to, *-s* tells the program to separate the pictures into a separate folder for each user, and *user* is the name(s) of the Reddit profile that you wish to download all media from.
 
 By default, if you do not enter the text shown in brackets, the images will be placed into a folder named *media* in the same directory as the script. This folder will be created automatically if necessary.
 
