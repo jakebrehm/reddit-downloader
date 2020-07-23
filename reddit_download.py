@@ -14,6 +14,8 @@ import re
 import praw
 import requests
 
+import duplicates
+
 
 def print_progress_bar(current, total, decimals=1, length=100, fill='█'):
     """Can be called in a loop in order to print a progress bar to the
@@ -98,6 +100,13 @@ class RedditDownloader(praw.Reddit):
             action='store_true',
             help='Whether or not to make a separate folder for each user.',
         )
+        # Allow the user to specify whether to remove duplicates
+        parser.add_argument(
+            '-d',
+            '--duplicates',
+            action='store_true',
+            help='Whether or not to remove duplicate files after the download.',
+        )
         # Allow the user to specify the output location
         current_directory = os.path.dirname(os.path.realpath(__file__))
         default_directory = os.path.join(current_directory, 'media')
@@ -119,6 +128,7 @@ class RedditDownloader(praw.Reddit):
         args = parser.parse_args()
         self.QUICK = args.quick
         self.SEPARATE = args.separate
+        self.DUPLICATES = args.duplicates
         self.DESTINATION = args.output
         self.USERS = args.user
 
@@ -272,6 +282,14 @@ class RedditDownloader(praw.Reddit):
         posts = [item for sublist in self.posts for item in sublist]
         with concurrent.futures.ThreadPoolExecutor() as executor:
             executor.map(self._download_post, posts)
+        if self.DUPLICATES:
+            if self.SEPARATE:
+                for user in self.USERS:
+                    destination = [os.path.join(self.DESTINATION, user)]
+                    duplicates.check_for_duplicates(destination)
+            else:
+                destination = [self.DESTINATION]
+                duplicates.check_for_duplicates(destination)
 
 
 if __name__ == '__main__':

@@ -2,3 +2,5 @@ config.ini
 .DS_Store
 *.ttf
 media/
+*.pyc
+ide/

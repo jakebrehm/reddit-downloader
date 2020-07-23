@@ -78,26 +78,27 @@ def check_for_duplicates(paths, hash=hashlib.sha1):
                 continue
 
     # duplicates = {}
-    n_duplicates = 0
+    # n_duplicates = 0
     duplicates = []
 
     # For all files with the hash on the 1st 1024 bytes, get their hash on the full file - collisions will be duplicates
-    for __, files_list in hashes_on_1k.items():
+    for test, files_list in hashes_on_1k.items():
         # print(len(files_list))
         # if len(files) < 2:
         if len(files_list) < 2:
             continue    # this hash of fist 1k file bytes is unique, no need to spend cpy cycles on it
 
         directory = os.path.dirname(files_list[0])
-
+        print(test)
         for filename in files_list:
+            print(files_list)
             # print(filename)
             try: 
                 full_hash = get_hash(filename, first_chunk_only=False)
                 duplicate = hashes_full.get(full_hash)
                 if duplicate:
-                    n_duplicates += 1
-                    print("Duplicate found: {} and {}".format(os.path.basename(filename), os.path.basename(duplicate)), end='\n\n')
+                    # n_duplicates += 1
+                    # print("Duplicate found: {} and {}".format(os.path.basename(filename), os.path.basename(duplicate)), end='\n\n')
                     
                     
                     for g, group in enumerate(duplicates):
@@ -120,30 +121,37 @@ def check_for_duplicates(paths, hash=hashlib.sha1):
             except (OSError,):
                 # the file access might've changed till the exec point got here 
                 continue
+        print('\n')
     
-    print(f'There are {n_duplicates} duplicates in the folder.', end='\n\n')
+    # return duplicates
+    # print(f'There are {n_duplicates} duplicates in the folder.', end='\n\n')
 
     # for k, v in duplicates.items(): print(f'{k}: {v}', end='\n\n')
     # print(duplicates)
     # all_dupes = set()
-    total = 0
-    print(f'There are {len(duplicates)} sets.')
     for group in duplicates:
-        print(group)
-        # # print(f'Before: {len(group)}')
         spared = group.pop()
-        print(f'Spared {spared} from deletion.')
-        # # print(f'After: {len(group)}')
         for d in group:
-            total += 1
-            print(f'Removing {d}...')
-        #     # all_dupes.add(d)
-            # os.remove(d)
             os.remove(os.path.join(directory, d))
 
-        print('\n')
+    # total = 0
+    # print(f'There are {len(duplicates)} sets.')
+    # for group in duplicates:
+    #     print(group)
+    #     # # print(f'Before: {len(group)}')
+    #     spared = group.pop()
+    #     print(f'Spared {spared} from deletion.')
+    #     # # print(f'After: {len(group)}')
+    #     for d in group:
+    #         total += 1
+    #         print(f'Removing {d}...')
+    #     #     # all_dupes.add(d)
+    #         # os.remove(d)
+    #         os.remove(os.path.join(directory, d))
+
+        # print('\n')
     # print(len(all_dupes))
-    print(f'There are {total} items in total.', end='\n\n')
+    # print(f'There are {total} items in total.', end='\n\n')
 
 
 
