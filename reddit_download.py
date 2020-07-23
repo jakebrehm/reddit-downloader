@@ -285,11 +285,13 @@ class RedditDownloader(praw.Reddit):
         if self.DUPLICATES:
             if self.SEPARATE:
                 for user in self.USERS:
-                    destination = [os.path.join(self.DESTINATION, user)]
-                    duplicates.check_for_duplicates(destination)
+                    destination = os.path.join(self.DESTINATION, user)
+                    dupes = duplicates.check_for_duplicates(destination)
+                    duplicates.remove_duplicates(destination, dupes)
             else:
-                destination = [self.DESTINATION]
-                duplicates.check_for_duplicates(destination)
+                destination = self.DESTINATION
+                dupes = duplicates.check_for_duplicates(destination)
+                duplicates.remove_duplicates(destination, dupes)
 
 
 if __name__ == '__main__':
