@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
 
 '''
-This code was taken from Todor Minakov's answer on this Stack Overflow
-post:
-            748675/finding-duplicate-files-and-removing-them
+Checks for duplicates in a specified directory and provides the ability 
+to delete them as well.
+
+The foundation of this code was taken from Todor Minakov's answer on
+this Stack Overflow post:
+
+stackoverflow.com/questions/748675/finding-duplicate-files-and-removing-them
+
 Although I had to correct a minor error and actually the code that
 deletes the duplicate files.
 '''
@@ -34,8 +39,20 @@ def chunk_reader(fobj, chunk_size=1024):
 
 
 def get_hash(filename, first_chunk_only=False, hash=hashlib.sha1):
-    """
+    """Get the hash of the specified file.
 
+    Args:
+        filename (str):
+            The name of the file.
+
+    Kwargs:
+        first_chunk_only (bool, False):
+            Whether or not to read only the first chunk of the file.
+        hash (hashlib.sha1):
+            This argument should be ignored.
+    
+    Returns:
+        The hash of the specified file.
     """
 
     hashobj = hash()
@@ -53,8 +70,21 @@ def get_hash(filename, first_chunk_only=False, hash=hashlib.sha1):
 
 
 def check_for_duplicates(path, hash=hashlib.sha1):
-    """
+    """Checks for duplicate files in the specified directory.
 
+    Args:
+        path (str):
+            The path of the directory where the duplicate files are
+            stored.
+
+    Kwargs:
+        hash (hashlib.sha1):
+            This argument should be ignored.
+
+    Returns:
+        A list of sets, where each set is a group of duplicate files.
+        The items of each set are the filename of the duplicate file,
+        i.e. without the directory.
     """
 
     # Dictionary of size_in_bytes: [full_path_to_file1, ...]
@@ -110,13 +140,16 @@ def check_for_duplicates(path, hash=hashlib.sha1):
                 full_hash = get_hash(filename, first_chunk_only=False)
                 duplicate = hashes_full.get(full_hash)
                 if duplicate:
+                    # Create a set for each group of duplicates
                     for g, group in enumerate(duplicates):
-                        if os.path.basename(filename) in group or os.path.basename(duplicate) in group:
-                            duplicates[g].add(os.path.basename(filename))
-                            duplicates[g].add(os.path.basename(duplicate))
+                        original_path = os.path.basename(filename)
+                        duplicate_path = os.path.basename(duplicate)
+                        if original_path in group or duplicate_path in group:
+                            duplicates[g].add(original_path)
+                            duplicates[g].add(duplicate_path)
                             break
                     else:
-                        duplicates.append({os.path.basename(filename), os.path.basename(duplicate)})
+                        duplicates.append({original_path, duplicate_path})
                 else:
                     hashes_full[full_hash] = filename
             except (OSError,):
@@ -126,20 +159,22 @@ def check_for_duplicates(path, hash=hashlib.sha1):
     return duplicates
 
 
-def remove_duplicates(path, duplicates):
-    """
+def remove_duplicates(directory, duplicates):
+    """Remove all duplicate files from a given list of duplicate groups.
 
+    Args:
+        directory (str):
+            The directory where the duplicate files are stored.
+        duplicates (list(set)):
+            A list of sets, where each set is a group of duplicate
+            files. The items of each set are the filename of the 
+            duplicate file, i.e. without the directory.
+
+            Will typically be returned by check_for_duplicates.
     """
 
     for group in duplicates:
+        # Pop from the group to keep at least one copy of the file
         group.pop()
         for d in group:
-            os.remove(os.path.join(path, d))
-
-
-if __name__ == "__main__":
-    # Changed slice from [1:] to [1] to only check in one directory
-    if sys.argv[1]:
-        check_for_duplicates(sys.argv[1])
-    else:
-        print("Please pass the paths to check as parameters to the script")
+            os.remove(os.path.join(directory, d))

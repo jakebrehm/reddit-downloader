@@ -282,6 +282,7 @@ class RedditDownloader(praw.Reddit):
         posts = [item for sublist in self.posts for item in sublist]
         with concurrent.futures.ThreadPoolExecutor() as executor:
             executor.map(self._download_post, posts)
+        # Check for and remove duplicates if desired
         if self.DUPLICATES:
             if self.SEPARATE:
                 for user in self.USERS:
